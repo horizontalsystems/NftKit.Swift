@@ -1,6 +1,7 @@
 import RxSwift
 import BigInt
 import EvmKit
+import HsExtensions
 
 class DataProvider {
     private let evmKit: EvmKit.Kit
@@ -21,7 +22,7 @@ extension DataProvider {
     func getEip1155Balance(contractAddress: Address, owner: Address, tokenId: BigUInt) -> Single<Int> {
         evmKit.call(contractAddress: contractAddress, data: Eip1155BalanceOfMethod(owner: owner, tokenId: tokenId).encodedABI())
                 .flatMap { data -> Single<Int> in
-                    guard let value = BigUInt(data.prefix(32).hex, radix: 16) else {
+                    guard let value = BigUInt(data.prefix(32).hs.hex, radix: 16) else {
                         return Single.error(ContractCallError.invalidBalanceData)
                     }
 
