@@ -1,4 +1,3 @@
-import RxSwift
 import BigInt
 import EvmKit
 import HsExtensions
@@ -14,20 +13,19 @@ class DataProvider {
 
 extension DataProvider {
 
-    func getEip721Owner(contractAddress: Address, tokenId: BigUInt) -> Single<Address> {
-        evmKit.call(contractAddress: contractAddress, data: Eip721OwnerOfMethod(tokenId: tokenId).encodedABI())
-                .map { Address(raw: $0) }
+    func getEip721Owner(contractAddress: Address, tokenId: BigUInt) async throws -> Address {
+        let data = try await evmKit.fetchCall(contractAddress: contractAddress, data: Eip721OwnerOfMethod(tokenId: tokenId).encodedABI())
+        return Address(raw: data)
     }
 
-    func getEip1155Balance(contractAddress: Address, owner: Address, tokenId: BigUInt) -> Single<Int> {
-        evmKit.call(contractAddress: contractAddress, data: Eip1155BalanceOfMethod(owner: owner, tokenId: tokenId).encodedABI())
-                .flatMap { data -> Single<Int> in
-                    guard let value = BigUInt(data.prefix(32).hs.hex, radix: 16) else {
-                        return Single.error(ContractCallError.invalidBalanceData)
-                    }
+    func getEip1155Balance(contractAddress: Address, owner: Address, tokenId: BigUInt) async throws -> Int {
+        let data = try await evmKit.fetchCall(contractAddress: contractAddress, data: Eip1155BalanceOfMethod(owner: owner, tokenId: tokenId).encodedABI())
 
-                    return Single.just(Int(value))
-                }
+        guard let value = BigUInt(data.prefix(32).hs.hex, radix: 16) else {
+            throw ContractCallError.invalidBalanceData
+        }
+
+        return Int(value)
     }
 
 }

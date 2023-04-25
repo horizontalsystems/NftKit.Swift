@@ -1,4 +1,3 @@
-import RxSwift
 import BigInt
 import EvmKit
 
@@ -50,32 +49,33 @@ class Eip1155TransactionSyncer {
 
 extension Eip1155TransactionSyncer: ITransactionSyncer {
 
-    func transactionsSingle() -> Single<([Transaction], Bool)> {
-        let lastBlockNumber = (try? storage.lastEip1155Event()?.blockNumber) ?? 0
+    func transactions() async throws -> ([Transaction], Bool) {
+        let lastBlockNumber = try storage.lastEip1155Event()?.blockNumber ?? 0
         let initial = lastBlockNumber == 0
 
-        return provider.eip1155TransactionsSingle(startBlock: lastBlockNumber + 1)
-                .do(onSuccess: { [weak self] transactions in
-                    self?.handle(transactions: transactions)
-                })
-                .map { transactions in
-                    let array = transactions.map { tx in
-                        Transaction(
-                                hash: tx.hash,
-                                timestamp: tx.timestamp,
-                                isFailed: false,
-                                blockNumber: tx.blockNumber,
-                                transactionIndex: tx.transactionIndex,
-                                nonce: tx.nonce,
-                                gasPrice: tx.gasPrice,
-                                gasLimit: tx.gasLimit,
-                                gasUsed: tx.gasUsed
-                        )
-                    }
+        do {
+            let transactions = try await provider.eip1155Transactions(startBlock: lastBlockNumber + 1)
 
-                    return (array, initial)
-                }
-                .catchErrorJustReturn(([], initial))
+            handle(transactions: transactions)
+
+            let array = transactions.map { tx in
+                Transaction(
+                        hash: tx.hash,
+                        timestamp: tx.timestamp,
+                        isFailed: false,
+                        blockNumber: tx.blockNumber,
+                        transactionIndex: tx.transactionIndex,
+                        nonce: tx.nonce,
+                        gasPrice: tx.gasPrice,
+                        gasLimit: tx.gasLimit,
+                        gasUsed: tx.gasUsed
+                )
+            }
+
+            return (array, initial)
+        } catch {
+            return ([], initial)
+        }
     }
 
 }

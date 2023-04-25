@@ -1,18 +1,14 @@
 import Foundation
-import RxSwift
+import Combine
 import BigInt
 import EvmKit
+import HsExtensions
 
 class BalanceManager {
     private let storage: Storage
     private let syncManager: BalanceSyncManager
 
-    private let nftBalancesSubject = PublishSubject<[NftBalance]>()
-    private(set) var nftBalances: [NftBalance] = [] {
-        didSet {
-            nftBalancesSubject.onNext(nftBalances)
-        }
-    }
+    @PostPublished private(set) var nftBalances: [NftBalance] = []
 
     init(storage: Storage, syncManager: BalanceSyncManager) {
         self.storage = storage
@@ -44,10 +40,6 @@ class BalanceManager {
 }
 
 extension BalanceManager {
-
-    var nftBalancesObservable: Observable<[NftBalance]> {
-        nftBalancesSubject.asObservable()
-    }
 
     func nftBalance(contractAddress: Address, tokenId: BigUInt) -> NftBalance? {
         try? storage.existingNftBalance(contractAddress: contractAddress, tokenId: tokenId)

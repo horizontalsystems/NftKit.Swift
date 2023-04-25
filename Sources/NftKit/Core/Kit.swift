@@ -1,5 +1,5 @@
 import Foundation
-import RxSwift
+import Combine
 import BigInt
 import EvmKit
 
@@ -9,7 +9,7 @@ public class Kit {
     private let balanceSyncManager: BalanceSyncManager
     private let transactionManager: TransactionManager
     private let storage: Storage
-    private let disposeBag = DisposeBag()
+    private var cancellables = Set<AnyCancellable>()
 
     init(evmKit: EvmKit.Kit, balanceManager: BalanceManager, balanceSyncManager: BalanceSyncManager, transactionManager: TransactionManager, storage: Storage) {
         self.evmKit = evmKit
@@ -18,12 +18,11 @@ public class Kit {
         self.transactionManager = transactionManager
         self.storage = storage
 
-        evmKit.syncStateObservable
-                .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                .subscribe(onNext: { [weak self] in
+        evmKit.syncStatePublisher
+                .sink { [weak self] in
                     self?.onUpdateSyncState(syncState: $0)
-                })
-                .disposed(by: disposeBag)
+                }
+                .store(in: &cancellables)
     }
 
     private func onUpdateSyncState(syncState: EvmKit.SyncState) {
@@ -51,8 +50,8 @@ extension Kit {
         balanceManager.nftBalances
     }
 
-    public var nftBalancesObservable: Observable<[NftBalance]> {
-        balanceManager.nftBalancesObservable
+    public var nftBalancesPublisher: AnyPublisher<[NftBalance], Never> {
+        balanceManager.$nftBalances
     }
 
     public func nftBalance(contractAddress: Address, tokenId: BigUInt) -> NftBalance? {
