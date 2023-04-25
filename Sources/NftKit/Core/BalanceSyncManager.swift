@@ -1,13 +1,13 @@
 import Foundation
-import RxSwift
 import BigInt
 import EvmKit
+import HsExtensions
 
 class BalanceSyncManager {
     private let address: Address
     private let storage: Storage
     private let dataProvider: DataProvider
-    private let disposeBag = DisposeBag()
+    private var tasks = Set<AnyTask>()
 
     private var syncing = false
     private var syncRequested = false
@@ -27,21 +27,19 @@ class BalanceSyncManager {
 
         if syncRequested {
             syncRequested = false
-            try? sync()
+            sync()
         }
     }
 
-    private func _handle(nftBalances: [NftBalance], balances: [Int?]) {
+    private func _handle(nftBalances: [Nft: Int?]) {
         var balanceInfos = [(Nft, Int)]()
 
-        for (index, nftBalance) in nftBalances.enumerated() {
-            let balance = balances[index]
-
+        for (nft, balance) in nftBalances {
             if let balance = balance {
 //                print("Synced balance for \(nftBalance.nft.tokenName) - \(nftBalance.nft.contractAddress) - \(nftBalance.nft.tokenId) - \(balance)")
-                balanceInfos.append((nftBalance.nft, balance))
+                balanceInfos.append((nft, balance))
             } else {
-                print("Failed to sync balance for \(nftBalance.nft.tokenName) - \(nftBalance.nft.contractAddress) - \(nftBalance.nft.tokenId)")
+                print("Failed to sync balance for \(nft.tokenName) - \(nft.contractAddress) - \(nft.tokenId)")
             }
         }
 
@@ -52,10 +50,30 @@ class BalanceSyncManager {
         _finishSync()
     }
 
-    private func handle(nftBalances: [NftBalance], balances: [Int?]) {
+    private func handle(nftBalances: [Nft: Int?]) {
         queue.async {
-            self._handle(nftBalances: nftBalances, balances: balances)
+            self._handle(nftBalances: nftBalances)
         }
+    }
+
+    private func _syncBalances(nfts: [Nft]) async {
+        let balances = await withTaskGroup(of: (Nft, Int?).self) { group in
+            for nft in nfts {
+                group.addTask {
+                    (nft, try? await self.balance(nft: nft))
+                }
+            }
+
+            var balances = [Nft: Int?]()
+
+            for await (nft, nftBalance) in group {
+                balances[nft] = nftBalance
+            }
+
+            return balances
+        }
+
+        handle(nftBalances: balances)
     }
 
     private func _sync() throws {
@@ -75,39 +93,28 @@ class BalanceSyncManager {
 
 //        print("NON SYNCED: \(nftBalances.count)")
 
-        let singles: [Single<Int?>] = nftBalances.map { nftBalance in
-            balanceSingle(nft: nftBalance.nft)
-                    .map { balance -> Int? in balance }
-                    .catchErrorJustReturn(nil)
-        }
-
-        Single.zip(singles)
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
-                .subscribe(onSuccess: { [weak self] balances in
-                    self?.handle(nftBalances: nftBalances, balances: balances)
-                })
-                .disposed(by: disposeBag)
+        Task { [weak self] in
+            await self?._syncBalances(nfts: nftBalances.map { $0.nft })
+        }.store(in: &tasks)
     }
 
-    private func balanceSingle(nft: Nft) -> Single<Int> {
+    private func balance(nft: Nft) async throws -> Int {
         let address = address
 
         switch nft.type {
         case .eip721:
-            return dataProvider.getEip721Owner(contractAddress: nft.contractAddress, tokenId: nft.tokenId)
-                    .map { owner in
-                        owner == address ? 1 : 0
-                    }
-                    .catchError { error in
-                        if let responseError = error as? JsonRpcResponse.ResponseError, case .rpcError = responseError {
-                            return Single.just(0)
-                        }
+            do {
+                let owner = try await dataProvider.getEip721Owner(contractAddress: nft.contractAddress, tokenId: nft.tokenId)
+                return owner == address ? 1 : 0
+            } catch {
+                if case JsonRpcResponse.ResponseError.rpcError = error {
+                    return 0
+                }
 
-                        return Single.error(error)
-                    }
-
+                throw error
+            }
         case .eip1155:
-            return dataProvider.getEip1155Balance(contractAddress: nft.contractAddress, owner: address, tokenId: nft.tokenId)
+            return try await dataProvider.getEip1155Balance(contractAddress: nft.contractAddress, owner: address, tokenId: nft.tokenId)
         }
     }
 
