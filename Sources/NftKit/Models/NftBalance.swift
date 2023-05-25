@@ -28,7 +28,7 @@ public class NftBalance: Record {
         case synced
     }
 
-    required public init(row: Row) {
+    required public init(row: Row) throws {
         nft = Nft(
                 type: row[Columns.type],
                 contractAddress: Address(raw: row[Columns.contractAddress]),
@@ -38,10 +38,10 @@ public class NftBalance: Record {
         balance = row[Columns.balance]
         synced = row[Columns.synced]
 
-        super.init(row: row)
+        try super.init(row: row)
     }
 
-    override public func encode(to container: inout PersistenceContainer) {
+    override public func encode(to container: inout PersistenceContainer) throws {
         container[Columns.type] = nft.type
         container[Columns.contractAddress] = nft.contractAddress.raw
         container[Columns.tokenId] = nft.tokenId
