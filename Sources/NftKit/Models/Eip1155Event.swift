@@ -44,7 +44,7 @@ class Eip1155Event: Record {
         case tokenSymbol
     }
 
-    required init(row: Row) {
+    required init(row: Row) throws {
         hash = row[Columns.hash]
         blockNumber = row[Columns.blockNumber]
         contractAddress = Address(raw: row[Columns.contractAddress])
@@ -55,10 +55,10 @@ class Eip1155Event: Record {
         tokenName = row[Columns.tokenName]
         tokenSymbol = row[Columns.tokenSymbol]
 
-        super.init(row: row)
+        try super.init(row: row)
     }
 
-    override func encode(to container: inout PersistenceContainer) {
+    override func encode(to container: inout PersistenceContainer) throws {
         container[Columns.hash] = hash
         container[Columns.blockNumber] = blockNumber
         container[Columns.contractAddress] = contractAddress.raw
