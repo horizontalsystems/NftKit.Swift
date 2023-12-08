@@ -6,9 +6,8 @@ public enum NftType: String {
 }
 
 extension NftType: DatabaseValueConvertible {
-
     public var databaseValue: DatabaseValue {
-        self.rawValue.databaseValue
+        rawValue.databaseValue
     }
 
     public static func fromDatabaseValue(_ dbValue: DatabaseValue) -> NftType? {
@@ -18,5 +17,4 @@ extension NftType: DatabaseValueConvertible {
 
         return NftType(rawValue: rawValue)
     }
-
 }

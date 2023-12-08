@@ -1,8 +1,8 @@
-import UIKit
-import SnapKit
 import EvmKit
-import NftKit
 import HdWalletKit
+import NftKit
+import SnapKit
+import UIKit
 
 class WordsController: UIViewController {
     private let textView = UITextView()
@@ -12,7 +12,8 @@ class WordsController: UIViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
-    required init?(coder aDecoder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -171,5 +172,4 @@ class WordsController: UIViewController {
             present(alert, animated: true)
         }
     }
-
 }

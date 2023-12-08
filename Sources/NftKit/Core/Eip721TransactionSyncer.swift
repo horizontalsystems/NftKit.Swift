@@ -19,15 +19,15 @@ class Eip721TransactionSyncer {
 
         let events = transactions.map { tx in
             Eip721Event(
-                    hash: tx.hash,
-                    blockNumber: tx.blockNumber,
-                    contractAddress: tx.contractAddress,
-                    from: tx.from,
-                    to: tx.to,
-                    tokenId: tx.tokenId,
-                    tokenName: tx.tokenName,
-                    tokenSymbol: tx.tokenSymbol,
-                    tokenDecimal: tx.tokenDecimal
+                hash: tx.hash,
+                blockNumber: tx.blockNumber,
+                contractAddress: tx.contractAddress,
+                from: tx.from,
+                to: tx.to,
+                tokenId: tx.tokenId,
+                tokenName: tx.tokenName,
+                tokenSymbol: tx.tokenSymbol,
+                tokenDecimal: tx.tokenDecimal
             )
         }
 
@@ -35,20 +35,18 @@ class Eip721TransactionSyncer {
 
         let nfts = Set<Nft>(events.map { event in
             Nft(
-                    type: .eip721,
-                    contractAddress: event.contractAddress,
-                    tokenId: event.tokenId,
-                    tokenName: event.tokenName
+                type: .eip721,
+                contractAddress: event.contractAddress,
+                tokenId: event.tokenId,
+                tokenName: event.tokenName
             )
         })
 
         delegate?.didSync(nfts: Array(nfts), type: .eip721)
     }
-
 }
 
 extension Eip721TransactionSyncer: ITransactionSyncer {
-
     func transactions() async throws -> ([Transaction], Bool) {
         let lastBlockNumber = try storage.lastEip721Event()?.blockNumber ?? 0
         let initial = lastBlockNumber == 0
@@ -60,15 +58,15 @@ extension Eip721TransactionSyncer: ITransactionSyncer {
 
             let array = transactions.map { tx in
                 Transaction(
-                        hash: tx.hash,
-                        timestamp: tx.timestamp,
-                        isFailed: false,
-                        blockNumber: tx.blockNumber,
-                        transactionIndex: tx.transactionIndex,
-                        nonce: tx.nonce,
-                        gasPrice: tx.gasPrice,
-                        gasLimit: tx.gasLimit,
-                        gasUsed: tx.gasUsed
+                    hash: tx.hash,
+                    timestamp: tx.timestamp,
+                    isFailed: false,
+                    blockNumber: tx.blockNumber,
+                    transactionIndex: tx.transactionIndex,
+                    nonce: tx.nonce,
+                    gasPrice: tx.gasPrice,
+                    gasLimit: tx.gasLimit,
+                    gasUsed: tx.gasUsed
                 )
             }
 
@@ -77,5 +75,4 @@ extension Eip721TransactionSyncer: ITransactionSyncer {
             return ([], initial)
         }
     }
-
 }

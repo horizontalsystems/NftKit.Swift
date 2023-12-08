@@ -1,7 +1,7 @@
-import Foundation
-import Combine
 import BigInt
+import Combine
 import EvmKit
+import Foundation
 
 public class Kit {
     private let evmKit: EvmKit.Kit
@@ -19,10 +19,10 @@ public class Kit {
         self.storage = storage
 
         evmKit.syncStatePublisher
-                .sink { [weak self] in
-                    self?.onUpdateSyncState(syncState: $0)
-                }
-                .store(in: &cancellables)
+            .sink { [weak self] in
+                self?.onUpdateSyncState(syncState: $0)
+            }
+            .store(in: &cancellables)
     }
 
     private func onUpdateSyncState(syncState: EvmKit.SyncState) {
@@ -31,83 +31,75 @@ public class Kit {
             balanceSyncManager.sync()
         case .syncing:
             ()
-        case .notSynced(let error):
+        case let .notSynced(error):
             ()
         }
     }
-
 }
 
-extension Kit {
-
-    public func sync() {
+public extension Kit {
+    func sync() {
         if case .synced = evmKit.syncState {
             balanceSyncManager.sync()
         }
     }
 
-    public var nftBalances: [NftBalance] {
+    var nftBalances: [NftBalance] {
         balanceManager.nftBalances
     }
 
-    public var nftBalancesPublisher: AnyPublisher<[NftBalance], Never> {
+    var nftBalancesPublisher: AnyPublisher<[NftBalance], Never> {
         balanceManager.$nftBalances
     }
 
-    public func nftBalance(contractAddress: Address, tokenId: BigUInt) -> NftBalance? {
+    func nftBalance(contractAddress: Address, tokenId: BigUInt) -> NftBalance? {
         balanceManager.nftBalance(contractAddress: contractAddress, tokenId: tokenId)
     }
 
-    public func transferEip721TransactionData(contractAddress: Address, to: Address, tokenId: BigUInt) -> TransactionData {
+    func transferEip721TransactionData(contractAddress: Address, to: Address, tokenId: BigUInt) -> TransactionData {
         transactionManager.transferEip721TransactionData(contractAddress: contractAddress, to: to, tokenId: tokenId)
     }
 
-    public func transferEip1155TransactionData(contractAddress: Address, to: Address, tokenId: BigUInt, value: BigUInt) -> TransactionData {
+    func transferEip1155TransactionData(contractAddress: Address, to: Address, tokenId: BigUInt, value: BigUInt) -> TransactionData {
         transactionManager.transferEip1155TransactionData(contractAddress: contractAddress, to: to, tokenId: tokenId, value: value)
     }
-
 }
 
 extension Kit: ITransactionSyncerDelegate {
-
     func didSync(nfts: [Nft], type: NftType) {
         balanceManager.didSync(nfts: nfts, type: type)
     }
-
 }
 
-extension Kit {
-
-    public func addEip721TransactionSyncer() {
+public extension Kit {
+    func addEip721TransactionSyncer() {
         let syncer = Eip721TransactionSyncer(provider: evmKit.transactionProvider, storage: storage)
         syncer.delegate = self
         evmKit.add(transactionSyncer: syncer)
     }
 
-    public func addEip1155TransactionSyncer() {
+    func addEip1155TransactionSyncer() {
         let syncer = Eip1155TransactionSyncer(provider: evmKit.transactionProvider, storage: storage)
         syncer.delegate = self
         evmKit.add(transactionSyncer: syncer)
     }
 
-    public func addEip721Decorators() {
+    func addEip721Decorators() {
         evmKit.add(methodDecorator: Eip721MethodDecorator(contractMethodFactories: Eip721ContractMethodFactories.shared))
         evmKit.add(eventDecorator: Eip721EventDecorator(userAddress: evmKit.address, storage: storage))
         evmKit.add(transactionDecorator: Eip721TransactionDecorator(userAddress: evmKit.address))
     }
 
-    public func addEip1155Decorators() {
+    func addEip1155Decorators() {
         evmKit.add(methodDecorator: Eip1155MethodDecorator(contractMethodFactories: Eip1155ContractMethodFactories.shared))
         evmKit.add(eventDecorator: Eip1155EventDecorator(userAddress: evmKit.address, storage: storage))
         evmKit.add(transactionDecorator: Eip1155TransactionDecorator(userAddress: evmKit.address))
     }
-
 }
 
-extension Kit {
-
-    public static func instance(evmKit: EvmKit.Kit) throws -> Kit {
-        let storage = Storage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "storage-\(evmKit.uniqueId)")
+public extension Kit {
+    static func instance(evmKit: EvmKit.Kit) throws -> Kit {
+        let storage = try Storage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "storage-\(evmKit.uniqueId)")
 
         let dataProvider = DataProvider(evmKit: evmKit)
         let balanceSyncManager = BalanceSyncManager(address: evmKit.address, storage: storage, dataProvider: dataProvider)
@@ -118,17 +110,17 @@ extension Kit {
         let transactionManager = TransactionManager(evmKit: evmKit)
 
         let kit = Kit(
-                evmKit: evmKit,
-                balanceManager: balanceManager,
-                balanceSyncManager: balanceSyncManager,
-                transactionManager: transactionManager,
-                storage: storage
+            evmKit: evmKit,
+            balanceManager: balanceManager,
+            balanceSyncManager: balanceSyncManager,
+            transactionManager: transactionManager,
+            storage: storage
         )
 
         return kit
     }
 
-    public static func clear(exceptFor excludedFiles: [String]) throws {
+    static func clear(exceptFor excludedFiles: [String]) throws {
         let fileManager = FileManager.default
         let fileUrls = try fileManager.contentsOfDirectory(at: dataDirectoryUrl(), includingPropertiesForKeys: nil)
 
@@ -143,12 +135,11 @@ extension Kit {
         let fileManager = FileManager.default
 
         let url = try fileManager
-                .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-                .appendingPathComponent("nft-kit", isDirectory: true)
+            .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+            .appendingPathComponent("nft-kit", isDirectory: true)
 
         try fileManager.createDirectory(at: url, withIntermediateDirectories: true)
 
         return url
     }
-
 }

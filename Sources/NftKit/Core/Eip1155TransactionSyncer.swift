@@ -19,15 +19,15 @@ class Eip1155TransactionSyncer {
 
         let events = transactions.map { tx in
             Eip1155Event(
-                    hash: tx.hash,
-                    blockNumber: tx.blockNumber,
-                    contractAddress: tx.contractAddress,
-                    from: tx.from,
-                    to: tx.to,
-                    tokenId: tx.tokenId,
-                    tokenValue: tx.tokenValue,
-                    tokenName: tx.tokenName,
-                    tokenSymbol: tx.tokenSymbol
+                hash: tx.hash,
+                blockNumber: tx.blockNumber,
+                contractAddress: tx.contractAddress,
+                from: tx.from,
+                to: tx.to,
+                tokenId: tx.tokenId,
+                tokenValue: tx.tokenValue,
+                tokenName: tx.tokenName,
+                tokenSymbol: tx.tokenSymbol
             )
         }
 
@@ -35,20 +35,18 @@ class Eip1155TransactionSyncer {
 
         let nfts = Set<Nft>(events.map { event in
             Nft(
-                    type: .eip1155,
-                    contractAddress: event.contractAddress,
-                    tokenId: event.tokenId,
-                    tokenName: event.tokenName
+                type: .eip1155,
+                contractAddress: event.contractAddress,
+                tokenId: event.tokenId,
+                tokenName: event.tokenName
             )
         })
 
         delegate?.didSync(nfts: Array(nfts), type: .eip1155)
     }
-
 }
 
 extension Eip1155TransactionSyncer: ITransactionSyncer {
-
     func transactions() async throws -> ([Transaction], Bool) {
         let lastBlockNumber = try storage.lastEip1155Event()?.blockNumber ?? 0
         let initial = lastBlockNumber == 0
@@ -60,15 +58,15 @@ extension Eip1155TransactionSyncer: ITransactionSyncer {
 
             let array = transactions.map { tx in
                 Transaction(
-                        hash: tx.hash,
-                        timestamp: tx.timestamp,
-                        isFailed: false,
-                        blockNumber: tx.blockNumber,
-                        transactionIndex: tx.transactionIndex,
-                        nonce: tx.nonce,
-                        gasPrice: tx.gasPrice,
-                        gasLimit: tx.gasLimit,
-                        gasUsed: tx.gasUsed
+                    hash: tx.hash,
+                    timestamp: tx.timestamp,
+                    isFailed: false,
+                    blockNumber: tx.blockNumber,
+                    transactionIndex: tx.transactionIndex,
+                    nonce: tx.nonce,
+                    gasPrice: tx.gasPrice,
+                    gasLimit: tx.gasLimit,
+                    gasUsed: tx.gasUsed
                 )
             }
 
@@ -77,5 +75,4 @@ extension Eip1155TransactionSyncer: ITransactionSyncer {
             return ([], initial)
         }
     }
-
 }

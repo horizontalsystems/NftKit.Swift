@@ -13,23 +13,18 @@ public struct Nft {
         self.tokenId = tokenId
         self.tokenName = tokenName
     }
-
 }
 
 extension Nft: Hashable {
-
     public func hash(into hasher: inout Hasher) {
         hasher.combine(type)
         hasher.combine(contractAddress.raw)
         hasher.combine(tokenId)
     }
-
 }
 
 extension Nft: Equatable {
-
-    public static func ==(lhs: Nft, rhs: Nft) -> Bool {
+    public static func == (lhs: Nft, rhs: Nft) -> Bool {
         lhs.type == rhs.type && lhs.contractAddress == rhs.contractAddress && lhs.tokenId == rhs.tokenId
     }
-
 }

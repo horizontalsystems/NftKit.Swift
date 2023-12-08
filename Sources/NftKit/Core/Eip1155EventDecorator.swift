@@ -1,6 +1,6 @@
-import Foundation
 import BigInt
 import EvmKit
+import Foundation
 
 class Eip1155EventDecorator {
     private let userAddress: Address
@@ -10,11 +10,9 @@ class Eip1155EventDecorator {
         self.userAddress = userAddress
         self.storage = storage
     }
-
 }
 
 extension Eip1155EventDecorator: IEventDecorator {
-
     public func contractEventInstancesMap(transactions: [Transaction]) -> [Data: [ContractEventInstance]] {
         let events: [Eip1155Event]
 
@@ -22,7 +20,7 @@ extension Eip1155EventDecorator: IEventDecorator {
             if transactions.count > 100 {
                 events = try storage.eip1155Events()
             } else {
-                let hashes = transactions.map { $0.hash }
+                let hashes = transactions.map(\.hash)
                 events = try storage.eip1155Events(hashes: hashes)
             }
         } catch {
@@ -33,12 +31,12 @@ extension Eip1155EventDecorator: IEventDecorator {
 
         for event in events {
             let eventInstance = Eip1155TransferEventInstance(
-                    contractAddress: event.contractAddress,
-                    from: event.from,
-                    to: event.to,
-                    tokenId: event.tokenId,
-                    value: BigUInt(event.tokenValue),
-                    tokenInfo: event.tokenName.isEmpty && event.tokenSymbol.isEmpty ? nil : TokenInfo(tokenName: event.tokenName, tokenSymbol: event.tokenSymbol, tokenDecimal: 1)
+                contractAddress: event.contractAddress,
+                from: event.from,
+                to: event.to,
+                tokenId: event.tokenId,
+                value: BigUInt(event.tokenValue),
+                tokenInfo: event.tokenName.isEmpty && event.tokenSymbol.isEmpty ? nil : TokenInfo(tokenName: event.tokenName, tokenSymbol: event.tokenSymbol, tokenDecimal: 1)
             )
 
             map[event.hash] = (map[event.hash] ?? []) + [eventInstance]
@@ -65,5 +63,4 @@ extension Eip1155EventDecorator: IEventDecorator {
             return nil
         }
     }
-
 }

@@ -1,7 +1,7 @@
-import Foundation
-import Combine
 import BigInt
+import Combine
 import EvmKit
+import Foundation
 import HsExtensions
 
 class BalanceManager {
@@ -28,7 +28,7 @@ class BalanceManager {
     private func handleNftsFromTransactions(type: NftType, nfts: [Nft]) throws {
         let existingBalances = try storage.nftBalances(type: type)
 
-        let existingNfts = existingBalances.map { $0.nft }
+        let existingNfts = existingBalances.map(\.nft)
         let newNfts = nfts.filter { !existingNfts.contains($0) }
 
         try storage.setNotSynced(nfts: existingNfts)
@@ -36,11 +36,9 @@ class BalanceManager {
 
         syncManager.sync()
     }
-
 }
 
 extension BalanceManager {
-
     func nftBalance(contractAddress: Address, tokenId: BigUInt) -> NftBalance? {
         try? storage.existingNftBalance(contractAddress: contractAddress, tokenId: tokenId)
     }
@@ -50,13 +48,10 @@ extension BalanceManager {
             try? self?.handleNftsFromTransactions(type: type, nfts: nfts)
         }
     }
-
 }
 
 extension BalanceManager: IBalanceSyncManagerDelegate {
-
     func didFinishSyncBalances() {
         syncNftBalances()
     }
-
 }
