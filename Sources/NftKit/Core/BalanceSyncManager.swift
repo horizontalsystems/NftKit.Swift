@@ -12,7 +12,7 @@ class BalanceSyncManager {
     private var syncing = false
     private var syncRequested = false
 
-    private let queue = DispatchQueue(label: "io.horizontal-systems.nft-kit.balance-sync-manager", qos: .utility)
+    private let queue = DispatchQueue(label: "io.horizontal-systems.nft-kit.balance-sync-manager", qos: .userInitiated)
 
     weak var delegate: IBalanceSyncManagerDelegate?
 
