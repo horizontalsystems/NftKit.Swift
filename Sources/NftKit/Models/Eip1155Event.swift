@@ -1,7 +1,7 @@
-import Foundation
-import GRDB
 import BigInt
 import EvmKit
+import Foundation
+import GRDB
 
 class Eip1155Event: Record {
     let hash: Data
@@ -69,5 +69,4 @@ class Eip1155Event: Record {
         container[Columns.tokenName] = tokenName
         container[Columns.tokenSymbol] = tokenSymbol
     }
-
 }

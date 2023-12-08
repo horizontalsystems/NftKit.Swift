@@ -1,6 +1,6 @@
-import Foundation
 import BigInt
 import EvmKit
+import Foundation
 import HsExtensions
 
 class BalanceSyncManager {
@@ -35,7 +35,7 @@ class BalanceSyncManager {
         var balanceInfos = [(Nft, Int)]()
 
         for (nft, balance) in nftBalances {
-            if let balance = balance {
+            if let balance {
 //                print("Synced balance for \(nftBalance.nft.tokenName) - \(nftBalance.nft.contractAddress) - \(nftBalance.nft.tokenId) - \(balance)")
                 balanceInfos.append((nft, balance))
             } else {
@@ -60,7 +60,7 @@ class BalanceSyncManager {
         let balances = await withTaskGroup(of: (Nft, Int?).self) { group in
             for nft in nfts {
                 group.addTask {
-                    (nft, try? await self.balance(nft: nft))
+                    await (nft, try? self.balance(nft: nft))
                 }
             }
 
@@ -94,7 +94,7 @@ class BalanceSyncManager {
 //        print("NON SYNCED: \(nftBalances.count)")
 
         Task { [weak self] in
-            await self?._syncBalances(nfts: nftBalances.map { $0.nft })
+            await self?._syncBalances(nfts: nftBalances.map(\.nft))
         }.store(in: &tasks)
     }
 
@@ -117,15 +117,12 @@ class BalanceSyncManager {
             return try await dataProvider.getEip1155Balance(contractAddress: nft.contractAddress, owner: address, tokenId: nft.tokenId)
         }
     }
-
 }
 
 extension BalanceSyncManager {
-
     func sync() {
         queue.async {
             try? self._sync()
         }
     }
-
 }

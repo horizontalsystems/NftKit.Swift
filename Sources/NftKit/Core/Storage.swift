@@ -1,7 +1,7 @@
-import Foundation
-import GRDB
 import BigInt
 import EvmKit
+import Foundation
+import GRDB
 
 class Storage {
     private let dbPool: DatabasePool
@@ -69,16 +69,14 @@ class Storage {
     private func filter(nft: Nft) -> SQLSpecificExpressible {
         var conditions: [SQLSpecificExpressible] = [
             NftBalance.Columns.contractAddress == nft.contractAddress.raw,
-            NftBalance.Columns.tokenId == nft.tokenId
+            NftBalance.Columns.tokenId == nft.tokenId,
         ]
 
         return conditions.joined(operator: .and)
     }
-
 }
 
 extension Storage {
-
     func nftBalances(type: NftType) throws -> [NftBalance] {
         try dbPool.read { db in
             try NftBalance.filter(NftBalance.Columns.type == type).fetchAll(db)
@@ -106,8 +104,8 @@ extension Storage {
     func setNotSynced(nfts: [Nft]) throws {
         try dbPool.write { db in
             try NftBalance
-                    .filter(nfts.map { filter(nft: $0) }.joined(operator: .or))
-                    .updateAll(db, NftBalance.Columns.synced.set(to: false))
+                .filter(nfts.map { filter(nft: $0) }.joined(operator: .or))
+                .updateAll(db, NftBalance.Columns.synced.set(to: false))
         }
     }
 
@@ -117,11 +115,10 @@ extension Storage {
                 let (nft, balance) = balanceInfo
 
                 try NftBalance
-                        .filter(filter(nft: nft))
-                        .updateAll(db,
-                                NftBalance.Columns.synced.set(to: true),
-                                NftBalance.Columns.balance.set(to: balance)
-                        )
+                    .filter(filter(nft: nft))
+                    .updateAll(db,
+                               NftBalance.Columns.synced.set(to: true),
+                               NftBalance.Columns.balance.set(to: balance))
             }
         }
     }
@@ -149,8 +146,8 @@ extension Storage {
     func eip721Events(hashes: [Data]) throws -> [Eip721Event] {
         try dbPool.read { db in
             try Eip721Event
-                    .filter(hashes.contains(Eip721Event.Columns.hash))
-                    .fetchAll(db)
+                .filter(hashes.contains(Eip721Event.Columns.hash))
+                .fetchAll(db)
         }
     }
 
@@ -177,8 +174,8 @@ extension Storage {
     func eip1155Events(hashes: [Data]) throws -> [Eip1155Event] {
         try dbPool.read { db in
             try Eip1155Event
-                    .filter(hashes.contains(Eip1155Event.Columns.hash))
-                    .fetchAll(db)
+                .filter(hashes.contains(Eip1155Event.Columns.hash))
+                .fetchAll(db)
         }
     }
 
@@ -189,5 +186,4 @@ extension Storage {
             }
         }
     }
-
 }

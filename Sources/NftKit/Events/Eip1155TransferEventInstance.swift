@@ -22,7 +22,7 @@ public class Eip1155TransferEventInstance: ContractEventInstance {
         super.init(contractAddress: contractAddress)
     }
 
-    public override func tags(userAddress: Address) -> [TransactionTag] {
+    override public func tags(userAddress: Address) -> [TransactionTag] {
         var tags = [TransactionTag]()
 
         if from == userAddress {
@@ -35,5 +35,4 @@ public class Eip1155TransferEventInstance: ContractEventInstance {
 
         return tags
     }
-
 }

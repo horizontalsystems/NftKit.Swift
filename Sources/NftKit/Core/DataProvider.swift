@@ -8,11 +8,9 @@ class DataProvider {
     init(evmKit: EvmKit.Kit) {
         self.evmKit = evmKit
     }
-
 }
 
 extension DataProvider {
-
     func getEip721Owner(contractAddress: Address, tokenId: BigUInt) async throws -> Address {
         let data = try await evmKit.fetchCall(contractAddress: contractAddress, data: Eip721OwnerOfMethod(tokenId: tokenId).encodedABI())
         return Address(raw: data)
@@ -27,13 +25,10 @@ extension DataProvider {
 
         return Int(value)
     }
-
 }
 
 extension DataProvider {
-
     enum ContractCallError: Error {
         case invalidBalanceData
     }
-
 }

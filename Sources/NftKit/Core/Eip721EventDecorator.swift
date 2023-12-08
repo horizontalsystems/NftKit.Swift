@@ -1,5 +1,5 @@
-import Foundation
 import EvmKit
+import Foundation
 
 class Eip721EventDecorator {
     private let userAddress: Address
@@ -9,11 +9,9 @@ class Eip721EventDecorator {
         self.userAddress = userAddress
         self.storage = storage
     }
-
 }
 
 extension Eip721EventDecorator: IEventDecorator {
-
     public func contractEventInstancesMap(transactions: [Transaction]) -> [Data: [ContractEventInstance]] {
         let events: [Eip721Event]
 
@@ -21,7 +19,7 @@ extension Eip721EventDecorator: IEventDecorator {
             if transactions.count > 100 {
                 events = try storage.eip721Events()
             } else {
-                let hashes = transactions.map { $0.hash }
+                let hashes = transactions.map(\.hash)
                 events = try storage.eip721Events(hashes: hashes)
             }
         } catch {
@@ -32,11 +30,11 @@ extension Eip721EventDecorator: IEventDecorator {
 
         for event in events {
             let eventInstance = Eip721TransferEventInstance(
-                    contractAddress: event.contractAddress,
-                    from: event.from,
-                    to: event.to,
-                    tokenId: event.tokenId,
-                    tokenInfo: event.tokenName.isEmpty && event.tokenSymbol.isEmpty ? nil : TokenInfo(tokenName: event.tokenName, tokenSymbol: event.tokenSymbol, tokenDecimal: event.tokenDecimal)
+                contractAddress: event.contractAddress,
+                from: event.from,
+                to: event.to,
+                tokenId: event.tokenId,
+                tokenInfo: event.tokenName.isEmpty && event.tokenSymbol.isEmpty ? nil : TokenInfo(tokenName: event.tokenName, tokenSymbol: event.tokenSymbol, tokenDecimal: event.tokenDecimal)
             )
 
             map[event.hash] = (map[event.hash] ?? []) + [eventInstance]
@@ -63,5 +61,4 @@ extension Eip721EventDecorator: IEventDecorator {
             return nil
         }
     }
-
 }

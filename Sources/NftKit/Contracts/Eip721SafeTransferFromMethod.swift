@@ -1,6 +1,6 @@
-import Foundation
 import BigInt
 import EvmKit
+import Foundation
 
 class Eip721SafeTransferFromMethod: ContractMethod {
     static let methodSignature = "safeTransferFrom(address,address,uint256,bytes)"

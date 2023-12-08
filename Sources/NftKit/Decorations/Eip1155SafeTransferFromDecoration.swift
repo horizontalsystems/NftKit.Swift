@@ -20,9 +20,9 @@ public class Eip1155SafeTransferFromDecoration: TransactionDecoration {
         super.init()
     }
 
-    public override func tags() -> [TransactionTag] {
+    override public func tags() -> [TransactionTag] {
         var tags = [
-            TransactionTag(type: .outgoing, protocol: .eip1155, contractAddress: contractAddress)
+            TransactionTag(type: .outgoing, protocol: .eip1155, contractAddress: contractAddress),
         ]
 
         if sentToSelf {
@@ -31,5 +31,4 @@ public class Eip1155SafeTransferFromDecoration: TransactionDecoration {
 
         return tags
     }
-
 }

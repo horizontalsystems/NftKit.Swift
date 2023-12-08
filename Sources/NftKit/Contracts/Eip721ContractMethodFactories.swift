@@ -7,5 +7,4 @@ class Eip721ContractMethodFactories: ContractMethodFactories {
         super.init()
         register(factories: [Eip721SafeTransferFromMethodFactory()])
     }
-
 }

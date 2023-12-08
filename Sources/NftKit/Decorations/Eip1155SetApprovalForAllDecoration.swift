@@ -6,7 +6,7 @@ public class Eip1155SetApprovalForAllDecoration: TransactionDecoration {
     public let `operator`: Address
     public let approved: Bool
 
-    init(contractAddress: Address, `operator`: Address, approved: Bool) {
+    init(contractAddress: Address, operator: Address, approved: Bool) {
         self.contractAddress = contractAddress
         self.operator = `operator`
         self.approved = approved
@@ -14,10 +14,9 @@ public class Eip1155SetApprovalForAllDecoration: TransactionDecoration {
         super.init()
     }
 
-    public override func tags() -> [TransactionTag] {
+    override public func tags() -> [TransactionTag] {
         [
-            TransactionTag(type: .approve, protocol: .eip1155, contractAddress: contractAddress)
+            TransactionTag(type: .approve, protocol: .eip1155, contractAddress: contractAddress),
         ]
     }
-
 }

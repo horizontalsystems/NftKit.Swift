@@ -7,7 +7,7 @@ class Eip1155SetApprovalForAllMethod: ContractMethod {
     let `operator`: Address
     let approved: Bool
 
-    init(`operator`: Address, approved: Bool) {
+    init(operator: Address, approved: Bool) {
         self.operator = `operator`
         self.approved = approved
 

@@ -1,6 +1,6 @@
-import GRDB
 import BigInt
 import EvmKit
+import GRDB
 
 public class NftBalance: Record {
     public let nft: Nft
@@ -28,12 +28,12 @@ public class NftBalance: Record {
         case synced
     }
 
-    required public init(row: Row) throws {
+    public required init(row: Row) throws {
         nft = Nft(
-                type: row[Columns.type],
-                contractAddress: Address(raw: row[Columns.contractAddress]),
-                tokenId: row[Columns.tokenId],
-                tokenName: row[Columns.tokenName]
+            type: row[Columns.type],
+            contractAddress: Address(raw: row[Columns.contractAddress]),
+            tokenId: row[Columns.tokenId],
+            tokenName: row[Columns.tokenName]
         )
         balance = row[Columns.balance]
         synced = row[Columns.synced]
@@ -49,5 +49,4 @@ public class NftBalance: Record {
         container[Columns.balance] = balance
         container[Columns.synced] = synced
     }
-
 }
